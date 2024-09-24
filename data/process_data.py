@@ -48,7 +48,7 @@ def clean_data(df):
     categories = df["categories"].str.split(";", expand=True)
     
     # Extract the category names from the first row of the new DataFrame
-    row = categories.iloc[[1]]
+    row = categories.iloc[[0]]
     category_colnames = [x.split("-")[0] for x in row.values[0]]
     categories.columns = category_colnames  # Assign category names as column headers
     
@@ -56,12 +56,15 @@ def clean_data(df):
     for column in categories:
         categories[column] = categories[column].astype(str).str[-1]  # Extract the last character
         categories[column] = categories[column].astype(int)  # Convert to integer
+        
+    # Fix the 'related' column by removing rows with value 2
+    categories = categories[categories['related'] != 2]
     
     # Drop the original 'categories' column from the DataFrame
     df.drop(["categories"], axis=1, inplace=True)
     
     # Concatenate the cleaned categories back into the original DataFrame
-    df = pd.concat([df, categories], join="outer", axis=1)
+    df = pd.concat([df, categories], join="inner", axis=1)
     
     # Remove duplicate rows from the DataFrame
     df = df.drop_duplicates()
